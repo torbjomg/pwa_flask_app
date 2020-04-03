@@ -7,6 +7,7 @@ from flask import (
     redirect,
     render_template,
     request,
+    send_from_directory,
     url_for,
     jsonify,
 )
@@ -81,6 +82,11 @@ def about():
     return render_template("/public/about.html")
 
 
+@blueprint.route("/manifest.json")
+def manifest():
+    return send_from_directory("static", "manifest.json")
+
 @blueprint.route("/sw.js")
 def sw():
     return current_app.send_static_file("sw.js")
+
