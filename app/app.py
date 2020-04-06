@@ -41,6 +41,9 @@ def register_extensions(app):
 
 def register_blueprints(app):
     """Register Flask blueprints."""
+    app.register_blueprint(program.views.blueprint)
+    app.register_blueprint(workout.views.blueprint)
+    app.register_blueprint(exercise.views.blueprint)
     app.register_blueprint(public.views.blueprint)
     app.register_blueprint(user.views.blueprint)
 
