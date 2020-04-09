@@ -9,7 +9,7 @@ from app.database import (
 
 class Program(Model):
     __tablename__ = "program"
-    user_id = Column(db.Integer, db.ForeignKey('user.id'))
+    user_id = Column(db.Integer, db.ForeignKey('users.id'))
     name = Column(db.String(120), nullable=False)
     id = Column(db.Integer, primary_key=True)
     description = Column(db.String(1200), nullable=True)

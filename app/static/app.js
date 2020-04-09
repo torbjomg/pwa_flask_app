@@ -26,19 +26,21 @@
     btnAdd.style.visibility = 'visible';
   });
   
-  btnAdd.addEventListener('click', (e) => {
-    btnAdd.style.visibility = 'hidden';
-    deferredPrompt.prompt();
-    deferredPrompt.userChoice
-      .then((choiceResult) => {
-        if (choiceResult.outcome === 'accepted') {
-          console.log('User accepted the A2HS prompt');
-        } else {
-          console.log('User dismissed the A2HS prompt');
-        }
-        deferredPrompt = null;
-      });
-  });
+  if (!(btnAdd===null)){
+    btnAdd.addEventListener('click', (e) => {
+      btnAdd.style.visibility = 'hidden';
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice
+        .then((choiceResult) => {
+          if (choiceResult.outcome === 'accepted') {
+            console.log('User accepted the A2HS prompt');
+          } else {
+            console.log('User dismissed the A2HS prompt');
+          }
+          deferredPrompt = null;
+        });
+    });
+  }
   
   window.addEventListener('appinstalled', (evt) => {
     app.logEvent('app', 'installed');

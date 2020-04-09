@@ -1,0 +1,56 @@
+
+
+{% extends "layout.html" %}
+
+{% block content %}
+
+
+<div class="container">
+    <h1 class="mt-5">Your saved Programs</h1>
+</div>
+<br>
+<p><button class="btn btn-outline-primary" onclick="openNewProgModal()">Create a new program</button></p>
+{% for program in programs %}
+
+<button id="collapsible{{ task.id }}" class="collapsible col-lg-6">{{ program.name }}</button>
+<div id="taskDiv{{ task.id }}" class="content col-lg-6">
+    <p>Description: {{ program.description }} <button class="btn btn-danger" onclick="deleteProgram({{ program.id }})" style="float:right;">Delete Program</button></p>
+
+</div>
+{% endfor %}
+<div id="newProgramModal" class="modal">
+    <div class="modal-content">
+    <span class="modal-close" onclick="closeNewProgramModal()">&times;</span>
+        <form autocomplete="off" enctype="multipart/form-data">
+            <div class="container">
+                <div class="container" id="programDefinitionArea" style="border-style: inset;">
+                    <div class="row">
+                        <input id="programNameInput" class="form-control" type="text" placeholder="Enter a program name...">
+                    </div>
+                    <div class="row">
+                        <input id="programDescriptionInput" class="form-control" type="text" placeholder="Enter program description...">
+                    </div>
+                    <br>
+                    <p><a class="btn btn-outline-secondary" onclick="addProgram()">Create New Program</a></p>
+                </div>
+            </div>
+        </form>
+    </div>
+    
+</div>
+<script>
+    modal = document.getElementById("newProgramModal");
+    function openNewProgModal(){
+        modal.style.display = "block";
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                closeNewProgramModal();
+            }
+        }
+    }
+    function closeNewProgramModal(){
+        modal.style.display = "none";
+    }
+</script>
+{% endblock %}
+

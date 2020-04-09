@@ -3,7 +3,11 @@ import sys
 
 from flask import Flask, render_template
 
-from app import public, user
+from app import public, user, program, workout, exercise
+from app.program.models import Program
+from app.workout.models import Workout
+from app.exercise.models import Exercise
+
 from app.extensions import (
     bcrypt,
     csrf_protect,
