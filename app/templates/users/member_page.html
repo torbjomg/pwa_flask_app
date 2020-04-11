@@ -3,21 +3,17 @@
 {% extends "layout.html" %}
 
 {% block content %}
-
-
 <div class="container">
     <h1 class="mt-5">Your saved Programs</h1>
 </div>
 <br>
 <p><button class="btn btn-outline-primary" onclick="openNewProgModal()">Create a new program</button></p>
+<div id="allProgramsDiv">
 {% for program in programs %}
 
-<button id="collapsible{{ task.id }}" class="collapsible col-lg-6">{{ program.name }}</button>
-<div id="taskDiv{{ task.id }}" class="content col-lg-6">
-    <p>Description: {{ program.description }} <button class="btn btn-danger" onclick="deleteProgram({{ program.id }})" style="float:right;">Delete Program</button></p>
-
-</div>
+    
 {% endfor %}
+</div>
 <div id="newProgramModal" class="modal">
     <div class="modal-content">
     <span class="modal-close" onclick="closeNewProgramModal()">&times;</span>
@@ -51,6 +47,11 @@
     function closeNewProgramModal(){
         modal.style.display = "none";
     }
+    document.addEventListener("DOMContentLoaded", function(){
+        // load the programs async
+        // have to make sure main.js and jquery is loaded beforehand
+        loadPrograms();
+    });
 </script>
 {% endblock %}
 
