@@ -3,6 +3,7 @@ from flask import Blueprint, render_template, request, jsonify
 from flask_login import login_required, login_user, logout_user, current_user
 from app.extensions import login_manager, csrf_protect, db
 from app.program.models import Program
+from app.workout.models import Workout
 
 blueprint = Blueprint("user", __name__, url_prefix="/users", static_folder="../static")
 
@@ -25,6 +26,24 @@ def load_programs():
             "programId": program.id
             } for program in programs
         ]
+    })
+
+@blueprint.route("/get_program_details/", methods=["POST"])
+@csrf_protect.exempt
+@login_required
+def get_program_details():
+    data = request.get_json()
+    program_id = data["program_id"]
+    workouts = Workout.query.filter_by(program=program_id)
+    return jsonify({
+        "workouts": [
+            {
+            "name": workout.name,
+            "description": workout.description,
+            "workoutId": workout.id
+            } for workout in workouts
+        ],
+        "program_id": program_id,
     })
 
 

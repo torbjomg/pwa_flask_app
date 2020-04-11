@@ -16,6 +16,46 @@ function setProgramList(data){
     }
 }
 
+function loadProgramDetails(programId){
+
+    $.ajax({
+        url: "get_program_details/",
+        method: "POST",
+        dataType: "json",
+        data: JSON.stringify({
+            program_id: programId
+        }),
+        contentType: "application/json; charset=UTF-8",
+    }).done(populateProgramDetails).fail(function(){alert("couldn't load program details")});
+}
+
+function populateProgramDetails(data){
+    var spinner = document.getElementById("tempSpinner");
+    if (!(spinner===null)){
+        spinner.parentNode.removeChild(spinner);
+    }
+    // get the div to populate
+    var programDiv = document.getElementById("programDiv" + String(data["program_id"]));
+    // temporary, just list the items
+    var itemList = document.createElement("ul");
+    for (let index = 0; index < data["workouts"].length; index++) {
+        const workout = data["workouts"][index];
+        var item = document.createElement("li");
+        item.innerHTML = workout["name"] + ": " + workout["description"];
+        itemList.appendChild(item);
+    }
+    var itm = document.createElement("li");
+    itm.innerHTML = "some text";
+    itemList.appendChild(itm);
+    programDiv.lastElementChild.appendChild(itemList);
+    // reisze the active collapsible button
+    var collapseContent = document.getElementById("collapsible" + data["program_id"]).nextElementSibling;
+    collapseContent.style.maxHeight = String(collapseContent.scrollHeight) + "px";
+    // finally resize the whole collapsible list
+    allProgramsDiv = document.getElementById("allProgramsDiv");
+    allProgramsDiv.style.maxHeight = String(allProgramsDiv.scrollHeight + itemList.scrollHeight) + "px";
+}
+
 function deleteProgram(programId){
     $.ajax({
         url: "delete_program/",
@@ -80,7 +120,7 @@ function createProgramDiv(programId, name, description){
     // create the inner paragraph
     var innerPara = document.createElement("p");
     // this is the worst, TODO: fix
-    innerPara.innerHTML = 'Description: ' + description + ' <button class="btn btn-danger" onclick=deleteProgram(' + String(programId) + ') style="float:right;">Delete Program</button>'
+    innerPara.innerHTML = 'Description: ' + description + ' <button class="btn btn-danger" onclick=deleteProgram(' + String(programId) + ') style="float:right;">Delete Program</button><button class="btn btn-success" onclick=loadProgramDetails(' + String(programId) + ') style="float:right;">Get Details</button>'
     
     // finally nest all the elements together and add to DOM
     divContent.appendChild(innerPara);
@@ -98,10 +138,25 @@ function createProgramDiv(programId, name, description){
 }
 
 initCollapsibles();
+loadedPrograms = [];
 function initSingleCollapsible(ele) {
     ele.addEventListener("click", function(){
-        this.classList.toggle("active");
+        // load program details, make sure this only happens on the first click
+        event.preventDefault();
         var content = this.nextElementSibling;
+        this.classList.toggle("active");
+        programId = this.id.replace( /^\D+/g, '');
+        if (!(loadedPrograms.includes(programId))){
+            loadedPrograms.push(programId);
+            var programDiv = document.getElementById("programDiv" + String(programId));
+            var tempImg = document.createElement("i");
+            tempImg.setAttribute("class", "fas fa-sync-alt icon-4x fa-spin");
+            tempImg.setAttribute("id", "tempSpinner");
+            programDiv.firstElementChild.insertAdjacentElement("beforeend", tempImg)
+            // programDiv.lastElementChild.appendChild(tempImg);
+            loadProgramDetails(programId);
+        }
+        
         if (content.style.maxHeight){
             content.style.maxHeight = null;
         } else {
