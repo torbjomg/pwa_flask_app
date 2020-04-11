@@ -75,6 +75,36 @@ def add_program():
     })
 
 
+@blueprint.route("/add_workout/", methods=["POST"])
+@csrf_protect.exempt
+@login_required
+def add_workout():
+    data = request.get_json()
+    user_id = current_user.id
+    new_workout = Workout(
+        user_id=user_id,
+        name=data["name"],
+        description=data["description"],
+        program=data["program_id"],
+    )
+    try:
+        new_workout.save(commit=True)
+    except IntegrityError as exc:
+        return jsonify({
+            "success": False,
+            "result": "Name Taken",
+            "exc": str(exc),
+        })
+    return jsonify({
+        "success": True,
+        "result": "Workout saved to database",
+        "name": data["name"],
+        "description": data["description"],
+        "workoutId": new_workout.id,
+        "programId": data["program_id"],
+    })
+
+
 @blueprint.route("/delete_program/", methods=["POST"])
 @csrf_protect.exempt
 @login_required

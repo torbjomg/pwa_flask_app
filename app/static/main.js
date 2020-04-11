@@ -44,16 +44,52 @@ function populateProgramDetails(data){
         item.innerHTML = workout["name"] + ": " + workout["description"];
         itemList.appendChild(item);
     }
-    var itm = document.createElement("li");
-    itm.innerHTML = "some text";
-    itemList.appendChild(itm);
+
+    itemList.setAttribute("id", "workoutList" + data["program_id"]);
     programDiv.lastElementChild.appendChild(itemList);
+
+    // add button to add workout
+    var btn = document.createElement("a");
+    if (data["workouts"].length === 0){    
+        btn.innerHTML = 'There\'s nothing here, <button class="btn btn-success" onclick=openNewWorkoutModal(' + data["program_id"] + ') style="float:right;">Add a workout!</button>';
+    } else {
+        btn.innerHTML = '<button class="btn btn-success" onclick=openNewWorkoutModal(' + data["program_id"] + ') style="float:right;">Add another workout!</button>';
+    }
+    itemList.appendChild(btn);
     // reisze the active collapsible button
+    
     var collapseContent = document.getElementById("collapsible" + data["program_id"]).nextElementSibling;
-    collapseContent.style.maxHeight = String(collapseContent.scrollHeight) + "px";
+    resizeCollapsible(collapseContent, itemList.scrollHeight + btn.scrollHeight);
+    //collapseContent.style.maxHeight = String(collapseContent.scrollHeight) + "px";
     // finally resize the whole collapsible list
+    // allProgramsDiv = document.getElementById("allProgramsDiv");
+    // allProgramsDiv.style.maxHeight = String(allProgramsDiv.scrollHeight + itemList.scrollHeight + btn.scrollHeight) + "px";
+}
+
+function resizeCollapsible(coll, addHeight){
+    // first resize the content
+    coll.style.maxHeight = String(coll.scrollHeight) + "px";
+    // then resize the outer container
     allProgramsDiv = document.getElementById("allProgramsDiv");
-    allProgramsDiv.style.maxHeight = String(allProgramsDiv.scrollHeight + itemList.scrollHeight) + "px";
+    allProgramsDiv.style.maxHeight = String(allProgramsDiv.scrollHeight + addHeight) + "px";
+}
+
+
+function populateWorkoutModal(addItemButtonContainer, programId){
+    var anchorButton = document.createElement("a");
+    anchorButton.setAttribute("class", "btn btn-outline-primary");
+    anchorButton.setAttribute("onclick", "addWorkout(" + String(programId) + ")");
+    anchorButton.innerHTML = "Create New Workout";
+    addItemButtonContainer.appendChild(anchorButton);
+}   
+
+function populateProgramModal(addItemButtonContainer){
+    // create button, add it to modal and connect to addProgram ajax call
+    var anchorButton = document.createElement("a");
+    anchorButton.setAttribute("class", "btn btn-outline-primary");
+    anchorButton.setAttribute("onclick", "addProgram()");
+    anchorButton.innerHTML = "Create New Program";
+    addItemButtonContainer.appendChild(anchorButton);
 }
 
 function deleteProgram(programId){
@@ -78,8 +114,8 @@ function deleteProgramSuccess(data){
 }
 
 function addProgram(){
-    name = document.getElementById("programNameInput").value;
-    description = document.getElementById("programDescriptionInput").value;
+    name = document.getElementById("nameInput").value;
+    description = document.getElementById("descriptionInput").value;
     modalContent = document.getElementsByClassName("modal-content")[0];
     modalContent.classList.add("modal-loading");
     $.ajax({
@@ -96,11 +132,42 @@ function addProgram(){
 
 function addProgramSuccess(data){
     if (data.success===true){
-        modal.style.display = "none";
-        createProgramDiv(data.programId, data.name, data.description)
+        closeModal();
+        createProgramDiv(data.programId, data.name, data.description);
     }
 }
 
+function addWorkout(programId){
+    name = document.getElementById("nameInput").value;
+    description = document.getElementById("descriptionInput").value;
+    modalContent = document.getElementsByClassName("modal-content")[0];
+    modalContent.classList.add("modal-loading");
+    $.ajax({
+        url: "add_workout/",
+        method: "POST",
+        dataType: "json",
+        data: JSON.stringify({
+            name: name,
+            description: description,
+            program_id: programId,
+        }),
+        contentType: "application/json; charset=UTF-8",
+    }).done(addWorkoutSuccess).fail(function(){alert("add failed for some reason")});
+}
+
+function addWorkoutSuccess(data){
+    if (data.success===true){
+        closeModal();
+        var workoutList = document.getElementById("workoutList" + String(data["programId"]));
+        var newListItem = document.createElement("li");
+        newListItem.innerHTML = data["name"] + ": " + data["description"];
+        workoutList.appendChild(newListItem);
+        var collapsibleContent = document.getElementById("collapsible" + data["programId"]).nextElementSibling;
+        resizeCollapsible(collapsibleContent, newListItem.scrollHeight);
+        console.log(data);
+        // TODO update DOM
+    }
+}
 function createProgramDiv(programId, name, description){
     // create DOM elements for a program
     // used in member_page when initially populating the page and on successful program add
@@ -120,7 +187,7 @@ function createProgramDiv(programId, name, description){
     // create the inner paragraph
     var innerPara = document.createElement("p");
     // this is the worst, TODO: fix
-    innerPara.innerHTML = 'Description: ' + description + ' <button class="btn btn-danger" onclick=deleteProgram(' + String(programId) + ') style="float:right;">Delete Program</button><button class="btn btn-success" onclick=loadProgramDetails(' + String(programId) + ') style="float:right;">Get Details</button>'
+    innerPara.innerHTML = 'Description: ' + description + ' <button class="btn btn-danger" onclick=deleteProgram(' + String(programId) + ') style="float:right;">Delete Program</button>'
     
     // finally nest all the elements together and add to DOM
     divContent.appendChild(innerPara);

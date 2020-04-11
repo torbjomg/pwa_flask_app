@@ -11,37 +11,51 @@
 <div id="allProgramsDiv">
  <!-- populated with programs in async call at DOMContent load -->
 </div>
-<div id="newProgramModal" class="modal">
+<div id="addItemModal" class="modal">
     <div class="modal-content">
-    <span class="modal-close" onclick="closeNewProgramModal()">&times;</span>
+    <span class="modal-close" onclick="closeModal()">&times;</span>
         <form autocomplete="off" enctype="multipart/form-data">
             <div class="container">
                 <div class="container" id="programDefinitionArea" style="border-style: inset;">
                     <div class="row">
-                        <input id="programNameInput" class="form-control" type="text" placeholder="Enter a program name...">
+                        <input id="nameInput" class="form-control" type="text" placeholder="Enter a name...">
                     </div>
                     <div class="row">
-                        <input id="programDescriptionInput" class="form-control" type="text" placeholder="Enter program description...">
+                        <input id="descriptionInput" class="form-control" type="text" placeholder="Enter description...">
                     </div>
                     <br>
-                    <p><a class="btn btn-outline-secondary" onclick="addProgram()">Create New Program</a></p>
+                    <p id="addItemButtonContainer"></p>
                 </div>
             </div>
         </form>
     </div>
-    
 </div>
+
 <script>
-    modal = document.getElementById("newProgramModal");
+    modal = document.getElementById("addItemModal");
+    addItemButtonContainer = document.getElementById("addItemButtonContainer");
     function openNewProgModal(){
+        populateProgramModal(addItemButtonContainer);
         modal.style.display = "block";
         window.onclick = function(event) {
             if (event.target == modal) {
-                closeNewProgramModal();
+                closeModal();
             }
         }
     }
-    function closeNewProgramModal(){
+    function openNewWorkoutModal(programId){
+        populateWorkoutModal(addItemButtonContainer, programId);
+        modal.style.display = "blocK";
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+    }
+    
+    function closeModal(){
+        // remove contents added by different open modal functions
+        addItemButtonContainer.removeChild(addItemButtonContainer.firstElementChild);
         modal.style.display = "none";
     }
     document.addEventListener("DOMContentLoaded", function(){
