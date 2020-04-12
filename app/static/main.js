@@ -35,28 +35,62 @@ function populateProgramDetails(data){
         spinner.parentNode.removeChild(spinner);
     }
     // get the div to populate
-    var programDiv = document.getElementById("programDiv" + String(data["program_id"]));
+    var programDiv = document.getElementById("programDiv" + String(data["programId"]));
     // temporary, just list the items
     var itemList = document.createElement("ul");
     itemList.setAttribute("class", "list-group");
-    itemList.setAttribute("id", "workoutList" + data["program_id"]);
+    itemList.setAttribute("id", "workoutList" + data["programId"]);
     for (let index = 0; index < data["workouts"].length; index++) {
         const workout = data["workouts"][index];
-        populateWorkoutItem(workout["name"], workout["description"], itemList);
+        populateWorkoutItem(workout["name"], workout["description"], itemList, workout["workoutId"], data["programId"]);
     }
     programDiv.lastElementChild.appendChild(itemList);
 
     // reisze the active collapsible button
-    var collapseContent = document.getElementById("collapsible" + data["program_id"]).nextElementSibling;
+    var collapseContent = document.getElementById("collapsible" + data["programId"]).nextElementSibling;
     resizeCollapsible(collapseContent, itemList.scrollHeight);
 }
 
-function populateWorkoutItem(name, description, listElement){
+function populateWorkoutItem(name, description, listElement, workoutId, programId){
     var newItem = document.createElement("li");
+    var editButton = document.createElement("i");
+    var deleteButton = document.createElement("i");
+    editButton.setAttribute("class", "fas fa-pencil-alt");
+    editButton.setAttribute("onclick", "");
+    deleteButton.setAttribute("class", "fas fa-trash-alt");
+    deleteButton.setAttribute("onclick", "deleteWorkoutItem(" + String(workoutId) + ", " + String(programId) + ")");
+    editButton.setAttribute("style", "float:right; color:orange; margin:5px;")
+    deleteButton.setAttribute("style", "float:right; color:red; margin:5px;")
+    
     newItem.setAttribute("class", "list-group-item");
-    newItem.innerHTML = name + ": " + description;
+    newItem.innerHTML = "<strong>" + name + "</strong>: " + description;
     listElement.appendChild(newItem);
+    newItem.insertAdjacentElement("beforeend", deleteButton);
+    newItem.insertAdjacentElement("beforeend", editButton);
     return newItem;
+}
+
+function deleteWorkoutItem(workoutId, programId){
+    openDeleteModal(workoutId, programId);
+    console.log("TODO: delete workout " + String(workoutId) + " from program " + String(programId));
+}
+
+function deleteWorkoutFromDb(workoutId, programId){
+    $.ajax({
+        url: "delete_workout/",
+        method: "POST",
+        dataType: "json",
+        data: JSON.stringify({    
+            workoutId: workoutId,
+            programId: programId,
+        }),
+        contentType: "application/json; charset=UTF-8",
+    }).done(deleteWorkoutSuccess).fail(function(){alert("couldn't delete workout")});
+}
+
+function deleteWorkoutSuccess(data){
+    // TODO remove from DOM 
+    console.log(data);
 }
 
 function resizeCollapsible(coll, addHeight){
@@ -152,7 +186,7 @@ function addWorkoutSuccess(data){
     if (data.success===true){
         closeModal();
         var workoutList = document.getElementById("workoutList" + String(data["programId"]));
-        newListItem = populateWorkoutItem(data["name"], data["description"], workoutList);
+        newListItem = populateWorkoutItem(data["name"], data["description"], workoutList, data["workoutId"], data["programId"]);
         var collapsibleContent = document.getElementById("collapsible" + data["programId"]).nextElementSibling;
         resizeCollapsible(collapsibleContent, newListItem.scrollHeight);
     }
@@ -177,19 +211,19 @@ function createProgramDiv(programId, name, description){
     textDiv.innerHTML = name;
     buttonsDiv.setAttribute("class", "col-sm-6");
     buttonsDiv.setAttribute("style", "float:right");
+    // this is the worst, TODO: fix
     buttonsDiv.innerHTML = "<a onclick='newWorkout("+ programId +")' class='btn btn-success' data-toggle='modal'><i class='fas fa-plus-circle'></i> <span>Add Workout</span></a><a onclick='openDeleteProgramModal(" + programId + ")' class='btn btn-danger' data-toggle='modal'><i class='fas fa-trash'></i> <span>Delete</span></a>";
     collapseBtn.appendChild(textDiv);
     collapseBtn.appendChild(buttonsDiv);
     
     // create the content div
     var divContent = document.createElement("div");
-    divContent.setAttribute("class", "content col-lg-6");
+    divContent.setAttribute("class", "content col-lg-12");
 
     // create the inner paragraph
     var innerPara = document.createElement("p");
-    // this is the worst, TODO: fix
     innerPara.innerHTML = 'Description: ' + description;
-    
+    innerPara.setAttribute("class", "col-lg-12");
     // finally nest all the elements together and add to DOM
     divContent.appendChild(innerPara);
     // collapseBtn and divContent siblings inside divElement

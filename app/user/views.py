@@ -43,7 +43,7 @@ def get_program_details():
             "workoutId": workout.id
             } for workout in workouts
         ],
-        "program_id": program_id,
+        "programId": program_id,
     })
 
 
@@ -115,4 +115,16 @@ def delete_program():
     return jsonify({
         "result": True,
         "programId": data["programId"]
+    })
+
+@blueprint.route("/delete_workout/", methods=["POST"])
+@csrf_protect.exempt
+@login_required
+def delete_workout():
+    data = request.get_json()
+    workout = Workout.query.filter_by(id=data["workoutId"])[0]
+    result = workout.delete(commit=True)
+    return jsonify({
+        "result": True,
+        "workoutId": data["workoutId"]
     })
