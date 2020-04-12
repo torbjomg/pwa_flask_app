@@ -38,32 +38,25 @@ function populateProgramDetails(data){
     var programDiv = document.getElementById("programDiv" + String(data["program_id"]));
     // temporary, just list the items
     var itemList = document.createElement("ul");
+    itemList.setAttribute("class", "list-group");
+    itemList.setAttribute("id", "workoutList" + data["program_id"]);
     for (let index = 0; index < data["workouts"].length; index++) {
         const workout = data["workouts"][index];
-        var item = document.createElement("li");
-        item.innerHTML = workout["name"] + ": " + workout["description"];
-        itemList.appendChild(item);
+        populateWorkoutItem(workout["name"], workout["description"], itemList);
     }
-
-    itemList.setAttribute("id", "workoutList" + data["program_id"]);
     programDiv.lastElementChild.appendChild(itemList);
 
-    // add button to add workout
-    var btn = document.createElement("a");
-    if (data["workouts"].length === 0){    
-        btn.innerHTML = 'There\'s nothing here, <button class="btn btn-success" onclick=openNewWorkoutModal(' + data["program_id"] + ') style="float:right;">Add a workout!</button>';
-    } else {
-        btn.innerHTML = '<button class="btn btn-success" onclick=openNewWorkoutModal(' + data["program_id"] + ') style="float:right;">Add another workout!</button>';
-    }
-    itemList.appendChild(btn);
     // reisze the active collapsible button
-    
     var collapseContent = document.getElementById("collapsible" + data["program_id"]).nextElementSibling;
-    resizeCollapsible(collapseContent, itemList.scrollHeight + btn.scrollHeight);
-    //collapseContent.style.maxHeight = String(collapseContent.scrollHeight) + "px";
-    // finally resize the whole collapsible list
-    // allProgramsDiv = document.getElementById("allProgramsDiv");
-    // allProgramsDiv.style.maxHeight = String(allProgramsDiv.scrollHeight + itemList.scrollHeight + btn.scrollHeight) + "px";
+    resizeCollapsible(collapseContent, itemList.scrollHeight);
+}
+
+function populateWorkoutItem(name, description, listElement){
+    var newItem = document.createElement("li");
+    newItem.setAttribute("class", "list-group-item");
+    newItem.innerHTML = name + ": " + description;
+    listElement.appendChild(newItem);
+    return newItem;
 }
 
 function resizeCollapsible(coll, addHeight){
@@ -116,7 +109,7 @@ function deleteProgramSuccess(data){
 function addProgram(){
     name = document.getElementById("nameInput").value;
     description = document.getElementById("descriptionInput").value;
-    modalContent = document.getElementsByClassName("modal-content")[0];
+    modalContent = document.getElementById("addItemModalContent");
     modalContent.classList.add("modal-loading");
     $.ajax({
         url: "add_program/",
@@ -140,7 +133,7 @@ function addProgramSuccess(data){
 function addWorkout(programId){
     name = document.getElementById("nameInput").value;
     description = document.getElementById("descriptionInput").value;
-    modalContent = document.getElementsByClassName("modal-content")[0];
+    modalContent = document.getElementById("addItemModalContent");
     modalContent.classList.add("modal-loading");
     $.ajax({
         url: "add_workout/",
@@ -159,15 +152,12 @@ function addWorkoutSuccess(data){
     if (data.success===true){
         closeModal();
         var workoutList = document.getElementById("workoutList" + String(data["programId"]));
-        var newListItem = document.createElement("li");
-        newListItem.innerHTML = data["name"] + ": " + data["description"];
-        workoutList.appendChild(newListItem);
+        newListItem = populateWorkoutItem(data["name"], data["description"], workoutList);
         var collapsibleContent = document.getElementById("collapsible" + data["programId"]).nextElementSibling;
         resizeCollapsible(collapsibleContent, newListItem.scrollHeight);
-        console.log(data);
-        // TODO update DOM
     }
 }
+
 function createProgramDiv(programId, name, description){
     // create DOM elements for a program
     // used in member_page when initially populating the page and on successful program add
@@ -175,11 +165,22 @@ function createProgramDiv(programId, name, description){
     divElement.setAttribute("id", "programDiv" + String(programId));
 
     // create the collapsible button
-    var collapseBtn = document.createElement("button");
+    var collapseBtn = document.createElement("div");
     collapseBtn.setAttribute("id", "collapsible" + String(programId));
-    collapseBtn.setAttribute("class", "collapsible col-lg-6");
-    collapseBtn.innerHTML = name;
+    collapseBtn.setAttribute("class", "collapsible row");
+    // collapseBtn.innerHTML = name;
 
+    // create buttons inside collapsible, format text
+    var textDiv = document.createElement("div");
+    var buttonsDiv = document.createElement("div");
+    textDiv.setAttribute("class", "col-sm-6");
+    textDiv.innerHTML = name;
+    buttonsDiv.setAttribute("class", "col-sm-6");
+    buttonsDiv.setAttribute("style", "float:right");
+    buttonsDiv.innerHTML = "<a onclick='newWorkout("+ programId +")' class='btn btn-success' data-toggle='modal'><i class='fas fa-plus-circle'></i> <span>Add Workout</span></a><a onclick='openDeleteProgramModal(" + programId + ")' class='btn btn-danger' data-toggle='modal'><i class='fas fa-trash'></i> <span>Delete</span></a>";
+    collapseBtn.appendChild(textDiv);
+    collapseBtn.appendChild(buttonsDiv);
+    
     // create the content div
     var divContent = document.createElement("div");
     divContent.setAttribute("class", "content col-lg-6");
@@ -187,7 +188,7 @@ function createProgramDiv(programId, name, description){
     // create the inner paragraph
     var innerPara = document.createElement("p");
     // this is the worst, TODO: fix
-    innerPara.innerHTML = 'Description: ' + description + ' <button class="btn btn-danger" onclick=deleteProgram(' + String(programId) + ') style="float:right;">Delete Program</button>'
+    innerPara.innerHTML = 'Description: ' + description;
     
     // finally nest all the elements together and add to DOM
     divContent.appendChild(innerPara);
@@ -202,6 +203,17 @@ function createProgramDiv(programId, name, description){
     initSingleCollapsible(collapseBtn);
     // resize to fit new content
     allProgramsDiv.style.maxHeight = String(allProgramsDiv.scrollHeight) + "px";
+}
+function newWorkout(programId){
+    // make sure event of containing div click isn't triggered
+    event.stopPropagation();
+    openNewWorkoutModal(programId);
+}
+function openDeleteProgramModal(programId){
+    // make sure event of containing div click isn't triggered
+    event.stopPropagation();
+    
+    deleteProgram(programId);
 }
 
 initCollapsibles();
