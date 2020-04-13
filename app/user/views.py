@@ -10,9 +10,19 @@ blueprint = Blueprint("user", __name__, url_prefix="/users", static_folder="../s
 @blueprint.route("/")
 @login_required
 def members():
-    """List members."""
+    return render_template("users/member_page.html")
+
+@blueprint.route("/load_content/", methods=["GET"])
+@csrf_protect.exempt
+@login_required
+def load_content():
+    # return every plan and task belonging to current_user
     plans = Plan.query.filter_by(user_id=current_user.id).all()
-    return render_template("users/member_page.html", plans=plans)
+    tasks = Task.query.filter_by(user_id=current_user.id).all()
+    return jsonify({
+        "plans": [p.makedict() for p in plans],
+        "tasks": [t.makedict() for t in tasks],
+    })
 
 @blueprint.route("/load_plans/", methods=["POST"])
 @csrf_protect.exempt

@@ -21,8 +21,12 @@
 const dbPromise = (function () {
   if (!('indexedDB' in window)) {return null;}
   return idb.open('testdr', 1, function(upgradeDb) {
-    if (!upgradeDb.objectStoreNames.contains('events')) {
-      const eventsOS = upgradeDb.createObjectStore('events', {keyPath: 'id'});
+    // make object store for "plans" and "tasks"
+    if (!upgradeDb.objectStoreNames.contains('plans')) {
+      const plansOS = upgradeDb.createObjectStore('plans', {keyPath: 'id'});
+    }
+    if (!upgradeDb.objectStoreNames.contains('tasks')) {
+      const tasksOS = upgradeDb.createObjectStore('tasks', {keyPath: 'id'});
     }
   });
 })();
