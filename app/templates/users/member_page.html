@@ -1,0 +1,91 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="container">
+    <h1 class="mt-5">Your saved Plans</h1>
+</div>
+<br>
+<p><button class="btn btn-outline-primary" onclick="openNewProgModal()">Create a new plan</button></p>
+<div id="allPlansDiv">
+ <!-- populated with plans in async call at DOMContent load -->
+</div>
+<div id="addItemModal" class="modal">
+    <div id="addItemModalContent" class="modal-content">
+    <span class="modal-close" onclick="closeModal()">&times;</span>
+        <form autocomplete="off" enctype="multipart/form-data">
+            <div class="container">
+                <div class="container" id="planDefinitionArea" style="border-style: inset;">
+                    <div class="row">
+                        <input id="nameInput" class="form-control" type="text" placeholder="Enter a name...">
+                    </div>
+                    <div class="row">
+                        <input id="descriptionInput" class="form-control" type="text" placeholder="Enter description...">
+                    </div>
+                    <br>
+                    <p id="addItemButtonContainer"></p>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="deleteItemModal" class="modal">
+    <div id="deleteItemModalContent" class="modal-content">
+        <span class="modal-close" onclick="closeDeleteModal()">&times;</span>
+        <p class="text-warning">Are you sure? Action cannot be undone.</p>
+        <div>
+            <input type="button" class="btn btn-default" data-dismiss="modal" value="Cancel" onclick="closeDeleteModal()">
+            <input id="deleteButton" type="submit" class="btn btn-danger" value="Delete">
+        </div>
+    </div>
+</div>
+
+<script>
+    modal = document.getElementById("addItemModal");
+    deleteModal = document.getElementById("deleteItemModal");
+    addItemButtonContainer = document.getElementById("addItemButtonContainer");
+    function openNewProgModal(){
+        populatePlanModal(addItemButtonContainer);
+        modal.style.display = "block";
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+    }
+    function openNewTaskModal(planId){
+        populateTaskModal(addItemButtonContainer, planId);
+        modal.style.display = "block";
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+    }
+    
+    function closeModal(){
+        // remove contents added by different open modal functions
+        addItemButtonContainer.removeChild(addItemButtonContainer.firstElementChild);
+        modal.style.display = "none";
+    }
+    function openDeleteModal(taskId, planId){
+        deleteModal.style.display = "block";
+        document.getElementById("deleteButton").setAttribute("onclick", "deleteTaskFromDb(" + taskId + ", " + planId + ")");
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                closeDeleteModal();
+            }
+        }
+    }
+
+    function closeDeleteModal(){
+        deleteModal.style.display = "none";
+    }
+    document.addEventListener("DOMContentLoaded", function(){
+        // load the plans async
+        // have to make sure main.js and jquery is loaded beforehand
+        loadPlans();
+    });
+</script>
+{% endblock %}
+

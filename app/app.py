@@ -3,7 +3,11 @@ import sys
 
 from flask import Flask, render_template
 
-from app import public, user
+from app import public, user, plan, task
+from app.plan.models import Plan
+from app.task.models import Task
+
+
 from app.extensions import (
     bcrypt,
     csrf_protect,
@@ -41,6 +45,8 @@ def register_extensions(app):
 
 def register_blueprints(app):
     """Register Flask blueprints."""
+    app.register_blueprint(plan.views.blueprint)
+    app.register_blueprint(task.views.blueprint)
     app.register_blueprint(public.views.blueprint)
     app.register_blueprint(user.views.blueprint)
 
