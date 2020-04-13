@@ -1,64 +1,64 @@
-function loadPrograms(){
+function loadPlans(){
     $.ajax({
-        url: "load_programs/",
+        url: "load_plans/",
         method: "POST",
         dataType: "json",
         data: JSON.stringify({    
         }),
         contentType: "application/json; charset=UTF-8",
-    }).done(setProgramList).fail(function(){alert("couldn't load programs")});
+    }).done(setPlanList).fail(function(){alert("couldn't load plans")});
 }
 
-function setProgramList(data){
-    for (let index = 0; index < data["programs"].length; index++) {
-        const program = data["programs"][index];
-        createProgramDiv(program["programId"], program["name"], program["description"]);
+function setPlanList(data){
+    for (let index = 0; index < data["plans"].length; index++) {
+        const plan = data["plans"][index];
+        createPlanDiv(plan["planId"], plan["name"], plan["description"]);
     }
 }
 
-function loadProgramDetails(programId){
+function loadPlanDetails(planId){
 
     $.ajax({
-        url: "get_program_details/",
+        url: "get_plan_details/",
         method: "POST",
         dataType: "json",
         data: JSON.stringify({
-            program_id: programId
+            plan_id: planId
         }),
         contentType: "application/json; charset=UTF-8",
-    }).done(populateProgramDetails).fail(function(){alert("couldn't load program details")});
+    }).done(populatePlanDetails).fail(function(){alert("couldn't load plan details")});
 }
 
-function populateProgramDetails(data){
+function populatePlanDetails(data){
     var spinner = document.getElementById("tempSpinner");
     if (!(spinner===null)){
         spinner.parentNode.removeChild(spinner);
     }
     // get the div to populate
-    var programDiv = document.getElementById("programDiv" + String(data["programId"]));
+    var planDiv = document.getElementById("planDiv" + String(data["planId"]));
     // temporary, just list the items
     var itemList = document.createElement("ul");
     itemList.setAttribute("class", "list-group");
-    itemList.setAttribute("id", "workoutList" + data["programId"]);
-    for (let index = 0; index < data["workouts"].length; index++) {
-        const workout = data["workouts"][index];
-        populateWorkoutItem(workout["name"], workout["description"], itemList, workout["workoutId"], data["programId"]);
+    itemList.setAttribute("id", "taskList" + data["planId"]);
+    for (let index = 0; index < data["tasks"].length; index++) {
+        const task = data["tasks"][index];
+        populateTaskItem(task["name"], task["description"], itemList, task["taskId"], data["planId"]);
     }
-    programDiv.lastElementChild.appendChild(itemList);
+    planDiv.lastElementChild.appendChild(itemList);
 
     // reisze the active collapsible button
-    var collapseContent = document.getElementById("collapsible" + data["programId"]).nextElementSibling;
+    var collapseContent = document.getElementById("collapsible" + data["planId"]).nextElementSibling;
     resizeCollapsible(collapseContent, itemList.scrollHeight);
 }
 
-function populateWorkoutItem(name, description, listElement, workoutId, programId){
+function populateTaskItem(name, description, listElement, taskId, planId){
     var newItem = document.createElement("li");
     var editButton = document.createElement("i");
     var deleteButton = document.createElement("i");
     editButton.setAttribute("class", "fas fa-pencil-alt");
     editButton.setAttribute("onclick", "");
     deleteButton.setAttribute("class", "fas fa-trash-alt");
-    deleteButton.setAttribute("onclick", "deleteWorkoutItem(" + String(workoutId) + ", " + String(programId) + ")");
+    deleteButton.setAttribute("onclick", "deleteTaskItem(" + String(taskId) + ", " + String(planId) + ")");
     editButton.setAttribute("style", "float:right; color:orange; margin:5px;")
     deleteButton.setAttribute("style", "float:right; color:red; margin:5px;")
     
@@ -70,83 +70,84 @@ function populateWorkoutItem(name, description, listElement, workoutId, programI
     return newItem;
 }
 
-function deleteWorkoutItem(workoutId, programId){
-    openDeleteModal(workoutId, programId);
-    console.log("TODO: delete workout " + String(workoutId) + " from program " + String(programId));
+function deleteTaskItem(taskId, planId){
+    openDeleteModal(taskId, planId);
+    console.log("TODO: delete task " + String(taskId) + " from plan " + String(planId));
 }
 
-function deleteWorkoutFromDb(workoutId, programId){
+function deleteTaskFromDb(taskId, planId){
     $.ajax({
-        url: "delete_workout/",
+        url: "delete_task/",
         method: "POST",
         dataType: "json",
         data: JSON.stringify({    
-            workoutId: workoutId,
-            programId: programId,
+            taskId: taskId,
+            planId: planId,
         }),
         contentType: "application/json; charset=UTF-8",
-    }).done(deleteWorkoutSuccess).fail(function(){alert("couldn't delete workout")});
+    }).done(deleteTaskSuccess).fail(function(){alert("couldn't delete task")});
 }
 
-function deleteWorkoutSuccess(data){
+function deleteTaskSuccess(data){
     // TODO remove from DOM 
     console.log(data);
+    closeDeleteModal();
 }
 
 function resizeCollapsible(coll, addHeight){
     // first resize the content
     coll.style.maxHeight = String(coll.scrollHeight) + "px";
     // then resize the outer container
-    allProgramsDiv = document.getElementById("allProgramsDiv");
-    allProgramsDiv.style.maxHeight = String(allProgramsDiv.scrollHeight + addHeight) + "px";
+    allPlansDiv = document.getElementById("allPlansDiv");
+    allPlansDiv.style.maxHeight = String(allPlansDiv.scrollHeight + addHeight) + "px";
 }
 
 
-function populateWorkoutModal(addItemButtonContainer, programId){
+function populateTaskModal(addItemButtonContainer, planId){
     var anchorButton = document.createElement("a");
     anchorButton.setAttribute("class", "btn btn-outline-primary");
-    anchorButton.setAttribute("onclick", "addWorkout(" + String(programId) + ")");
-    anchorButton.innerHTML = "Create New Workout";
+    anchorButton.setAttribute("onclick", "addTask(" + String(planId) + ")");
+    anchorButton.innerHTML = "Create New Task";
     addItemButtonContainer.appendChild(anchorButton);
 }   
 
-function populateProgramModal(addItemButtonContainer){
-    // create button, add it to modal and connect to addProgram ajax call
+function populatePlanModal(addItemButtonContainer){
+    // create button, add it to modal and connect to addPlan ajax call
     var anchorButton = document.createElement("a");
     anchorButton.setAttribute("class", "btn btn-outline-primary");
-    anchorButton.setAttribute("onclick", "addProgram()");
-    anchorButton.innerHTML = "Create New Program";
+    anchorButton.setAttribute("onclick", "addPlan()");
+    anchorButton.innerHTML = "Create New Plan";
     addItemButtonContainer.appendChild(anchorButton);
 }
 
-function deleteProgram(programId){
+function deletePlan(planId){
     $.ajax({
-        url: "delete_program/",
+        url: "delete_plan/",
         method: "POST",
         dataType: "json",
         data: JSON.stringify({
-            programId: programId,
+            planId: planId,
         }),
         contentType: "application/json; charset=UTF-8",
-    }).done(deleteProgramSuccess).fail(function(){alert("delete failed for some reason")});
+    }).done(deletePlanSuccess).fail(function(){alert("delete failed for some reason")});
 }
 
-function deleteProgramSuccess(data){
+function deletePlanSuccess(data){
     // called as long as the ajax call successfully, check data.result if deletion from db was successful
     if (data.result===true){
-        document.getElementById("programDiv"+data.programId).remove();
+        document.getElementById("planDiv"+data.planId).remove();
     } else {
         alert("delete failed");
     }
 }
 
-function addProgram(){
+function addPlan(){
     name = document.getElementById("nameInput").value;
     description = document.getElementById("descriptionInput").value;
     modalContent = document.getElementById("addItemModalContent");
     modalContent.classList.add("modal-loading");
     $.ajax({
-        url: "add_program/",
+        url: "add_plan/",
         method: "POST",
         dataType: "json",
         data: JSON.stringify({
@@ -154,53 +155,53 @@ function addProgram(){
             description: description,
         }),
         contentType: "application/json; charset=UTF-8",
-    }).done(addProgramSuccess).fail(function(){alert("add failed for some reason")});
+    }).done(addPlanSuccess).fail(function(){alert("add failed for some reason")});
 }
 
-function addProgramSuccess(data){
+function addPlanSuccess(data){
     if (data.success===true){
         closeModal();
-        createProgramDiv(data.programId, data.name, data.description);
+        createPlanDiv(data.planId, data.name, data.description);
     }
 }
 
-function addWorkout(programId){
+function addTask(planId){
     name = document.getElementById("nameInput").value;
     description = document.getElementById("descriptionInput").value;
     modalContent = document.getElementById("addItemModalContent");
     modalContent.classList.add("modal-loading");
     $.ajax({
-        url: "add_workout/",
+        url: "add_task/",
         method: "POST",
         dataType: "json",
         data: JSON.stringify({
             name: name,
             description: description,
-            program_id: programId,
+            plan_id: planId,
         }),
         contentType: "application/json; charset=UTF-8",
-    }).done(addWorkoutSuccess).fail(function(){alert("add failed for some reason")});
+    }).done(addTaskSuccess).fail(function(){alert("add failed for some reason")});
 }
 
-function addWorkoutSuccess(data){
+function addTaskSuccess(data){
     if (data.success===true){
         closeModal();
-        var workoutList = document.getElementById("workoutList" + String(data["programId"]));
-        newListItem = populateWorkoutItem(data["name"], data["description"], workoutList, data["workoutId"], data["programId"]);
-        var collapsibleContent = document.getElementById("collapsible" + data["programId"]).nextElementSibling;
+        var taskList = document.getElementById("taskList" + String(data["planId"]));
+        newListItem = populateTaskItem(data["name"], data["description"], taskList, data["taskId"], data["planId"]);
+        var collapsibleContent = document.getElementById("collapsible" + data["planId"]).nextElementSibling;
         resizeCollapsible(collapsibleContent, newListItem.scrollHeight);
     }
 }
 
-function createProgramDiv(programId, name, description){
-    // create DOM elements for a program
-    // used in member_page when initially populating the page and on successful program add
+function createPlanDiv(planId, name, description){
+    // create DOM elements for a plan
+    // used in member_page when initially populating the page and on successful plan add
     var divElement = document.createElement("div");
-    divElement.setAttribute("id", "programDiv" + String(programId));
+    divElement.setAttribute("id", "planDiv" + String(planId));
 
     // create the collapsible button
     var collapseBtn = document.createElement("div");
-    collapseBtn.setAttribute("id", "collapsible" + String(programId));
+    collapseBtn.setAttribute("id", "collapsible" + String(planId));
     collapseBtn.setAttribute("class", "collapsible row");
     // collapseBtn.innerHTML = name;
 
@@ -212,7 +213,7 @@ function createProgramDiv(programId, name, description){
     buttonsDiv.setAttribute("class", "col-sm-6");
     buttonsDiv.setAttribute("style", "float:right");
     // this is the worst, TODO: fix
-    buttonsDiv.innerHTML = "<a onclick='newWorkout("+ programId +")' class='btn btn-success' data-toggle='modal'><i class='fas fa-plus-circle'></i> <span>Add Workout</span></a><a onclick='openDeleteProgramModal(" + programId + ")' class='btn btn-danger' data-toggle='modal'><i class='fas fa-trash'></i> <span>Delete</span></a>";
+    buttonsDiv.innerHTML = "<a onclick='newTask("+ planId +")' class='btn btn-success' data-toggle='modal'><i class='fas fa-plus-circle'></i> <span>Add Task</span></a><a onclick='openDeletePlanModal(" + planId + ")' class='btn btn-danger' data-toggle='modal'><i class='fas fa-trash'></i> <span>Delete</span></a>";
     collapseBtn.appendChild(textDiv);
     collapseBtn.appendChild(buttonsDiv);
     
@@ -231,43 +232,43 @@ function createProgramDiv(programId, name, description){
     divElement.appendChild(divContent);
     
     // TODO handle case where children == 0 or 1
-    allProgramsDiv = document.getElementById("allProgramsDiv");
-    allProgramsDiv.appendChild(divElement);
+    allPlansDiv = document.getElementById("allPlansDiv");
+    allPlansDiv.appendChild(divElement);
     // initialize the collapsible logic !! has to be done after it's added to DOM due to sibling access !! 
     initSingleCollapsible(collapseBtn);
     // resize to fit new content
-    allProgramsDiv.style.maxHeight = String(allProgramsDiv.scrollHeight) + "px";
+    allPlansDiv.style.maxHeight = String(allPlansDiv.scrollHeight) + "px";
 }
-function newWorkout(programId){
+function newTask(planId){
     // make sure event of containing div click isn't triggered
     event.stopPropagation();
-    openNewWorkoutModal(programId);
+    openNewTaskModal(planId);
 }
-function openDeleteProgramModal(programId){
+function openDeletePlanModal(planId){
     // make sure event of containing div click isn't triggered
     event.stopPropagation();
     
-    deleteProgram(programId);
+    deletePlan(planId);
 }
 
 initCollapsibles();
-loadedPrograms = [];
+loadedPlans = [];
 function initSingleCollapsible(ele) {
     ele.addEventListener("click", function(){
-        // load program details, make sure this only happens on the first click
+        // load plan details, make sure this only happens on the first click
         event.preventDefault();
         var content = this.nextElementSibling;
         this.classList.toggle("active");
-        programId = this.id.replace( /^\D+/g, '');
-        if (!(loadedPrograms.includes(programId))){
-            loadedPrograms.push(programId);
-            var programDiv = document.getElementById("programDiv" + String(programId));
+        planId = this.id.replace( /^\D+/g, '');
+        if (!(loadedPlans.includes(planId))){
+            loadedPlans.push(planId);
+            var planDiv = document.getElementById("planDiv" + String(planId));
             var tempImg = document.createElement("i");
             tempImg.setAttribute("class", "fas fa-sync-alt icon-4x fa-spin");
             tempImg.setAttribute("id", "tempSpinner");
-            programDiv.firstElementChild.insertAdjacentElement("beforeend", tempImg)
-            // programDiv.lastElementChild.appendChild(tempImg);
-            loadProgramDetails(programId);
+            planDiv.firstElementChild.insertAdjacentElement("beforeend", tempImg)
+            // planDiv.lastElementChild.appendChild(tempImg);
+            loadPlanDetails(planId);
         }
         
         if (content.style.maxHeight){

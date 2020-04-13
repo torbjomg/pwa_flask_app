@@ -7,10 +7,10 @@ from app.database import (
     relationship,
 )
 
-class Workout(Model):
-    __tablename__ = "workout"
+class Task(Model):
+    __tablename__ = "task"
     user_id = Column(db.Integer, db.ForeignKey('users.id'))
-    program = Column(db.Integer, db.ForeignKey('program.id'))
+    plan = Column(db.Integer, db.ForeignKey('plan.id'))
     name = Column(db.String(120), unique=True, nullable=False)
     id = Column(db.Integer, primary_key=True)
     description = Column(db.String(1200), nullable=False)

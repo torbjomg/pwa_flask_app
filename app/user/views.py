@@ -2,8 +2,8 @@
 from flask import Blueprint, render_template, request, jsonify
 from flask_login import login_required, login_user, logout_user, current_user
 from app.extensions import login_manager, csrf_protect, db
-from app.program.models import Program
-from app.workout.models import Workout
+from app.plan.models import Plan
+from app.task.models import Task
 
 blueprint = Blueprint("user", __name__, url_prefix="/users", static_folder="../static")
 
@@ -11,84 +11,84 @@ blueprint = Blueprint("user", __name__, url_prefix="/users", static_folder="../s
 @login_required
 def members():
     """List members."""
-    programs = Program.query.filter_by(user_id=current_user.id).all()
-    return render_template("users/member_page.html", programs=programs)
+    plans = Plan.query.filter_by(user_id=current_user.id).all()
+    return render_template("users/member_page.html", plans=plans)
 
-@blueprint.route("/load_programs/", methods=["POST"])
+@blueprint.route("/load_plans/", methods=["POST"])
 @csrf_protect.exempt
 @login_required
-def load_programs():
-    programs = Program.query.filter_by(user_id=current_user.id).all()
+def load_plans():
+    plans = Plan.query.filter_by(user_id=current_user.id).all()
     return jsonify({
-        "programs": [
-            {"name": program.name,
-            "description": program.description,
-            "programId": program.id
-            } for program in programs
+        "plans": [
+            {"name": plan.name,
+            "description": plan.description,
+            "planId": plan.id
+            } for plan in plans
         ]
     })
 
-@blueprint.route("/get_program_details/", methods=["POST"])
+@blueprint.route("/get_plan_details/", methods=["POST"])
 @csrf_protect.exempt
 @login_required
-def get_program_details():
+def get_plan_details():
     data = request.get_json()
-    program_id = data["program_id"]
-    workouts = Workout.query.filter_by(program=program_id)
+    plan_id = data["plan_id"]
+    tasks = Task.query.filter_by(plan=plan_id)
     return jsonify({
-        "workouts": [
+        "tasks": [
             {
-            "name": workout.name,
-            "description": workout.description,
-            "workoutId": workout.id
-            } for workout in workouts
+            "name": task.name,
+            "description": task.description,
+            "taskId": task.id
+            } for task in tasks
         ],
-        "programId": program_id,
+        "planId": plan_id,
     })
 
 
-@blueprint.route("/add_program/", methods=["POST"])
+@blueprint.route("/add_plan/", methods=["POST"])
 @csrf_protect.exempt
 @login_required
-def add_program():
+def add_plan():
     data = request.get_json()
     user_id = current_user.id
-    new_program = Program(
+    new_plan = Plan(
         user_id=user_id,
         name=data["name"],
         description=data["description"],
     )
     try:
-        new_program.save(commit=True)
+        new_plan.save(commit=True)
     except IntegrityError as exc:
         return jsonify({
             "success": False,
-            "result": "Program name taken",
+            "result": "Plan name taken",
             "exc": str(exc)
             })
     return jsonify({
         "success": True,
-        "result": "Program saved to database",
+        "result": "Plan saved to database",
         "name": data["name"],
         "description": data["description"],
-        "programId": new_program.id
+        "planId": new_plan.id
     })
 
 
-@blueprint.route("/add_workout/", methods=["POST"])
+@blueprint.route("/add_task/", methods=["POST"])
 @csrf_protect.exempt
 @login_required
-def add_workout():
+def add_task():
     data = request.get_json()
     user_id = current_user.id
-    new_workout = Workout(
+    new_task = Task(
         user_id=user_id,
         name=data["name"],
         description=data["description"],
-        program=data["program_id"],
+        plan=data["plan_id"],
     )
     try:
-        new_workout.save(commit=True)
+        new_task.save(commit=True)
     except IntegrityError as exc:
         return jsonify({
             "success": False,
@@ -97,34 +97,34 @@ def add_workout():
         })
     return jsonify({
         "success": True,
-        "result": "Workout saved to database",
+        "result": "Task saved to database",
         "name": data["name"],
         "description": data["description"],
-        "workoutId": new_workout.id,
-        "programId": data["program_id"],
+        "taskId": new_task.id,
+        "planId": data["plan_id"],
     })
 
 
-@blueprint.route("/delete_program/", methods=["POST"])
+@blueprint.route("/delete_plan/", methods=["POST"])
 @csrf_protect.exempt
 @login_required
-def delete_program():
+def delete_plan():
     data = request.get_json()
-    program = Program.query.filter_by(id=data["programId"])[0]
-    result = program.delete(commit=True)
+    plan = Plan.query.filter_by(id=data["planId"])[0]
+    result = plan.delete(commit=True)
     return jsonify({
         "result": True,
-        "programId": data["programId"]
+        "planId": data["planId"]
     })
 
-@blueprint.route("/delete_workout/", methods=["POST"])
+@blueprint.route("/delete_task/", methods=["POST"])
 @csrf_protect.exempt
 @login_required
-def delete_workout():
+def delete_task():
     data = request.get_json()
-    workout = Workout.query.filter_by(id=data["workoutId"])[0]
-    result = workout.delete(commit=True)
+    task = Task.query.filter_by(id=data["taskId"])[0]
+    result = task.delete(commit=True)
     return jsonify({
         "result": True,
-        "workoutId": data["workoutId"]
+        "taskId": data["taskId"]
     })

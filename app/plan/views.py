@@ -7,6 +7,8 @@ from flask import (
     jsonify,    
 )
 
+from sqlalchemy.exc import IntegrityError
+
 from flask_login import (
     login_required,
     login_user,
@@ -14,5 +16,7 @@ from flask_login import (
     current_user,
 )
 from app.extensions import login_manager, csrf_protect, db
+from app.plan.models import Plan
 
-blueprint = Blueprint("exercise", __name__, static_folder=".:/static")
+blueprint = Blueprint("plan", __name__, static_folder=".:/static")
+

@@ -2,19 +2,19 @@
 
 {% block content %}
 <div class="container">
-    <h1 class="mt-5">Your saved Programs</h1>
+    <h1 class="mt-5">Your saved Plans</h1>
 </div>
 <br>
-<p><button class="btn btn-outline-primary" onclick="openNewProgModal()">Create a new program</button></p>
-<div id="allProgramsDiv">
- <!-- populated with programs in async call at DOMContent load -->
+<p><button class="btn btn-outline-primary" onclick="openNewProgModal()">Create a new plan</button></p>
+<div id="allPlansDiv">
+ <!-- populated with plans in async call at DOMContent load -->
 </div>
 <div id="addItemModal" class="modal">
     <div id="addItemModalContent" class="modal-content">
     <span class="modal-close" onclick="closeModal()">&times;</span>
         <form autocomplete="off" enctype="multipart/form-data">
             <div class="container">
-                <div class="container" id="programDefinitionArea" style="border-style: inset;">
+                <div class="container" id="planDefinitionArea" style="border-style: inset;">
                     <div class="row">
                         <input id="nameInput" class="form-control" type="text" placeholder="Enter a name...">
                     </div>
@@ -45,7 +45,7 @@
     deleteModal = document.getElementById("deleteItemModal");
     addItemButtonContainer = document.getElementById("addItemButtonContainer");
     function openNewProgModal(){
-        populateProgramModal(addItemButtonContainer);
+        populatePlanModal(addItemButtonContainer);
         modal.style.display = "block";
         window.onclick = function(event) {
             if (event.target == modal) {
@@ -53,8 +53,8 @@
             }
         }
     }
-    function openNewWorkoutModal(programId){
-        populateWorkoutModal(addItemButtonContainer, programId);
+    function openNewTaskModal(planId){
+        populateTaskModal(addItemButtonContainer, planId);
         modal.style.display = "block";
         window.onclick = function(event) {
             if (event.target == modal) {
@@ -68,9 +68,9 @@
         addItemButtonContainer.removeChild(addItemButtonContainer.firstElementChild);
         modal.style.display = "none";
     }
-    function openDeleteModal(workoutId, programId){
+    function openDeleteModal(taskId, planId){
         deleteModal.style.display = "block";
-        document.getElementById("deleteButton").setAttribute("onclick", "deleteWorkoutFromDb(" + workoutId + ", " + programId + ")");
+        document.getElementById("deleteButton").setAttribute("onclick", "deleteTaskFromDb(" + taskId + ", " + planId + ")");
         window.onclick = function(event) {
             if (event.target == modal) {
                 closeDeleteModal();
@@ -82,9 +82,9 @@
         deleteModal.style.display = "none";
     }
     document.addEventListener("DOMContentLoaded", function(){
-        // load the programs async
+        // load the plans async
         // have to make sure main.js and jquery is loaded beforehand
-        loadPrograms();
+        loadPlans();
     });
 </script>
 {% endblock %}

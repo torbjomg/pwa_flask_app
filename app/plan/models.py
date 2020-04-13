@@ -7,8 +7,8 @@ from app.database import (
     relationship,
 )
 
-class Program(Model):
-    __tablename__ = "program"
+class Plan(Model):
+    __tablename__ = "plan"
     user_id = Column(db.Integer, db.ForeignKey('users.id'))
     name = Column(db.String(120), nullable=False)
     id = Column(db.Integer, primary_key=True)
