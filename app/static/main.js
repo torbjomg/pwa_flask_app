@@ -1,3 +1,5 @@
+const message = document.getElementById("pwa-message");
+
 function loadContentNetworkFirst(){
     loadContent()
     .then(data => {
@@ -27,18 +29,45 @@ function loadContentNetworkFirst(){
 }
 
 function setLastUpdated(date){
-    console.log(date);
+    localStorage.setItem("lastUpdated", date);
+}
+
+function getLastUpdated(){
+    return localStorage.getItem("lastUpdated");
 }
 
 function messageDataSaved(){
-    console.log(" -- ");
+    let lastUpdated = getLastUpdated();
+    message.classList.add("success");
+    message.textContent = "Data retrieved from server was saved for offline mode";
+    if (lastUpdated) {
+        message.textContent += " Last fetched server data: " + lastUpdated;
+    }
+    message.style.display = "block";
 }
 
 function messageSaveError(){
-    console.warn("err");
+    // todo
+    console.warn("save error");
+}
+
+function messageNoData(){
+    // todo
+    console.warn("no data");
+}
+
+function messageOffline(){
+    let lastUpdated = getLastUpdated();
+    message.classList.add("warn");
+    message.textContent = "You're offline and viewing stored data."
+    if (lastUpdated) {
+        message.textContent += " Last fetched server data: " + lastUpdated;
+    }
+    message.style.display = "block";
 }
 
 function loadContent(){
+    // loads everything on current user id
     return $.ajax({
         url: "load_content/",
         method: "GET",
@@ -49,8 +78,8 @@ function saveContentsLocally(data){
     // data : {"plans": [...], "tasks": [...]}
     if (!("indexedDB" in window)) {return null;}
     return dbPromise.then(db => {
-        var plans = data["plans"];
-        var tasks = data["tasks"]
+        let plans = data["plans"];
+        let tasks = data["tasks"]
         const txPlans = db.transaction("plans", "readwrite");
         const storePlans = txPlans.objectStore("plans");
         const txTasks = db.transaction("tasks", "readwrite");
