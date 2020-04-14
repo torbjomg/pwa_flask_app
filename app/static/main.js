@@ -96,17 +96,6 @@ function saveContentsLocally(data){
     });
 }
 
-function loadPlans(){
-    $.ajax({
-        url: "load_plans/",
-        method: "POST",
-        dataType: "json",
-        data: JSON.stringify({    
-        }),
-        contentType: "application/json; charset=UTF-8",
-    }).done(setPlanList).fail(function(){alert("couldn't load plans")});
-}
-
 function setPlanList(data){
     for (let index = 0; index < data["plans"].length; index++) {
         const plan = data["plans"][index];
@@ -149,9 +138,9 @@ function populatePlanDetails(data){
 }
 
 function populateTaskItem(name, description, listElement, taskId, planId){
-    var newItem = document.createElement("li");
-    var editButton = document.createElement("i");
-    var deleteButton = document.createElement("i");
+    let newItem = document.createElement("li");
+    let editButton = document.createElement("i");
+    let deleteButton = document.createElement("i");
     editButton.setAttribute("class", "fas fa-pencil-alt");
     editButton.setAttribute("onclick", "");
     deleteButton.setAttribute("class", "fas fa-trash-alt");
@@ -164,12 +153,12 @@ function populateTaskItem(name, description, listElement, taskId, planId){
     listElement.appendChild(newItem);
     newItem.insertAdjacentElement("beforeend", deleteButton);
     newItem.insertAdjacentElement("beforeend", editButton);
+    newItem.setAttribute("id", "task" + taskId);
     return newItem;
 }
 
 function deleteTaskItem(taskId, planId){
     openDeleteModal(taskId, planId);
-    console.log("TODO: delete task " + String(taskId) + " from plan " + String(planId));
 }
 
 function deleteTaskFromDb(taskId, planId){
@@ -186,8 +175,8 @@ function deleteTaskFromDb(taskId, planId){
 }
 
 function deleteTaskSuccess(data){
-    // TODO remove from DOM 
-    console.log(data);
+    let taskItem = document.getElementById("task" + data["taskId"]);
+    taskItem.parentNode.removeChild(taskItem);
     closeDeleteModal();
 }
 
