@@ -1,3 +1,101 @@
+const message = document.getElementById("pwa-message");
+
+function loadContentNetworkFirst(){
+    loadContent()
+    .then(data => {
+        // load all data on user id
+        setPlanList(data);
+        saveContentsLocally(data)
+        .then(() => {
+            setLastUpdated(new Date());
+            messageDataSaved();
+        }).catch(err => {
+            messageSaveError();
+            console.warn(err);
+        });
+    }).catch(err => {
+        // expected error if app in offline mode
+        getPlansLocal()
+        .then(offlineData => {
+            if (!offlineData.length) {
+                messageNoData();
+            } else {
+                messageOffline();
+                // call same DOM update function with no data
+                setPlanList(null);
+            }
+        });
+    });
+}
+
+function setLastUpdated(date){
+    localStorage.setItem("lastUpdated", date);
+}
+
+function getLastUpdated(){
+    return localStorage.getItem("lastUpdated");
+}
+
+function messageDataSaved(){
+    let lastUpdated = getLastUpdated();
+    message.classList.add("success");
+    message.textContent = "Data retrieved from server was saved for offline mode";
+    if (lastUpdated) {
+        message.textContent += " Last fetched server data: " + lastUpdated;
+    }
+    message.style.display = "block";
+}
+
+function messageSaveError(){
+    // todo
+    console.warn("save error");
+}
+
+function messageNoData(){
+    // todo
+    console.warn("no data");
+}
+
+function messageOffline(){
+    let lastUpdated = getLastUpdated();
+    message.classList.add("warn");
+    message.textContent = "You're offline and viewing stored data."
+    if (lastUpdated) {
+        message.textContent += " Last fetched server data: " + lastUpdated;
+    }
+    message.style.display = "block";
+}
+
+function loadContent(){
+    // loads everything on current user id
+    return $.ajax({
+        url: "load_content/",
+        method: "GET",
+    });
+}
+
+function saveContentsLocally(data){
+    // data : {"plans": [...], "tasks": [...]}
+    if (!("indexedDB" in window)) {return null;}
+    return dbPromise.then(db => {
+        let plans = data["plans"];
+        let tasks = data["tasks"]
+        const txPlans = db.transaction("plans", "readwrite");
+        const storePlans = txPlans.objectStore("plans");
+        const txTasks = db.transaction("tasks", "readwrite");
+        const storeTasks = txTasks.objectStore("tasks");
+
+        return Promise.all(plans.map(plan => storePlans.put(plan)) + 
+                           tasks.map(task => storeTasks.put(task)))
+        .catch(() => {
+            // TODO maybe split these up incase somehow only 1 fails
+            txPlans.abort();
+            txTasks.abort();
+            throw Error("Content was not added to the store");
+        });
+    });
+}
+
 function loadPlans(){
     $.ajax({
         url: "load_plans/",
@@ -12,12 +110,11 @@ function loadPlans(){
 function setPlanList(data){
     for (let index = 0; index < data["plans"].length; index++) {
         const plan = data["plans"][index];
-        createPlanDiv(plan["planId"], plan["name"], plan["description"]);
+        createPlanDiv(plan["id"], plan["name"], plan["description"]);
     }
 }
 
 function loadPlanDetails(planId){
-
     $.ajax({
         url: "get_plan_details/",
         method: "POST",

@@ -15,3 +15,11 @@ class Task(Model):
     id = Column(db.Integer, primary_key=True)
     description = Column(db.String(1200), nullable=False)
     
+    def makedict(self):
+        return {
+            "userId": self.user_id,
+            "planId": self.plan,
+            "name": self.name,
+            "id": self.id,
+            "description": self.description,
+        }
