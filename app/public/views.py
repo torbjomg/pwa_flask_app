@@ -22,7 +22,7 @@ from app.extensions import login_manager, csrf_protect, db
 from app.public.forms import LoginForm
 from app.user.forms import RegisterForm
 from app.user.models import User
-from app.utils import flash_errors
+from app.utils import flash_errors, seed_data
 
 blueprint = Blueprint("public", __name__, static_folder="../static")
 
@@ -64,13 +64,14 @@ def register():
     """Register new user."""
     form = RegisterForm(request.form)
     if form.validate_on_submit():
-        User.create(
+        user = User.create(
             username=form.username.data,
             email=form.email.data,
             password=form.password.data,
             active=True,
         )
-        flash("Thank you for registering. You can now log in.", "success")
+        seed_data(user.id)
+        flash("Thank you for registering. You can now log in. (user was seeded with some random data)", "success")
         return redirect(url_for("public.home"))
     else:
         flash_errors(form)
