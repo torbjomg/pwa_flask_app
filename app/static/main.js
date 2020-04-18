@@ -15,17 +15,32 @@ function loadContentNetworkFirst(){
         });
     }).catch(err => {
         // expected error if app in offline mode
-        getPlansLocal()
+        Promise.all([getTableLocal("plans"), getTableLocal("tasks")])
         .then(offlineData => {
-            if (!offlineData.length) {
+            let plans = offlineData[0];
+            let tasks = offlineData[1];
+            if (offlineData === null) {
                 messageNoData();
             } else {
                 messageOffline();
-                // call same DOM update function with no data
-                setPlanList(null);
+                setPlanList({"plans": offlineData[0], "tasks": offlineData[1]});
             }
         });
     });
+}
+
+function getTableLocal(tableName){
+    // TODO no check on user id - look into how youre supposed to handle that while offline
+    // getting both promises in one dbPromise didn't seem to work
+    // chaining them instead and calling by tableName ("tasks", "plans")
+    if (!("indexedDB" in window)){
+        return null;
+    }
+    return dbPromise.then(db => {
+        const tx = db.transaction(tableName, "readonly");
+        const store = tx.objectStore(tableName);
+        return store.getAll();
+    })
 }
 
 function setLastUpdated(date){
@@ -80,10 +95,10 @@ function saveContentsLocally(data){
     return dbPromise.then(db => {
         let plans = data["plans"];
         let tasks = data["tasks"]
-        const txPlans = db.transaction("plans", "readwrite");
-        const storePlans = txPlans.objectStore("plans");
-        const txTasks = db.transaction("tasks", "readwrite");
-        const storeTasks = txTasks.objectStore("tasks");
+        const plansTx = db.transaction("plans", "readwrite");
+        const tasksTx = db.transaction("tasks", "readwrite");
+        const plansStore = plansTx.objectStore("plans");
+        const tasksStore = tasksTx.objectStore("tasks");
 
         return Promise.all(plans.map(plan => storePlans.put(plan)) + 
                            tasks.map(task => storeTasks.put(task)))
